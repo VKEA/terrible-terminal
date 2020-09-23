@@ -1,0 +1,116 @@
+<html>
+    <head>
+        <style>
+            .form {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+        
+            html {
+                background-color: #000000;
+                border-radius: 5px;
+        
+                padding: 15px;
+        
+                display: flex;
+                flex-direction: column;
+        
+                overflow-y: scroll;
+            }
+        
+            .answer {
+                font-family: 'Courier New', Courier, monospace;
+                color: #FFFFFF;
+                font-size: 12pt;
+            }
+
+            input,
+            textarea {
+                width: 100%;
+                background-color: #00000000;
+                border: none;
+                
+                font-family: 'Courier New', Courier, monospace;
+                color: #FFFFFF;
+                font-size: 12pt;
+                text-shadow: 0px 0px 0px #FFFFFF;
+                -webkit-text-fill-color: transparent;
+            }
+
+            input:focus {
+                outline: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="answer" id="answer">
+        </div>
+        <input type="text" id="input" autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+    </body>
+    <script>
+        /* Global Variables */
+        let darkTheme = true;
+        let history = [];
+        let historyPointer = history.length;
+
+        /* Global Functions */
+        function println (string) {
+            const answerBox = document.getElementById("answer");
+            answerBox.innerHTML += string;
+            answerBox.innerHTML += "<br />";
+            console.log(string);
+        }
+
+        document.addEventListener ("click",
+            function (event) {
+                document.getElementById("input").focus();
+            }
+        )
+    
+        input.addEventListener ("keyup",
+            function(event) {
+                switch (event.keyCode) {
+                    case 13:
+                        let string = document.getElementById("input").value;
+
+                        if (!string.includes("<")&&!string.includes(">")) {
+                            println(string);
+                            document.getElementById("input").value = null;
+                            fetch('api/index.php', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    "command": string
+                                })
+                            }).then(function(response) {
+                                return response.json()
+                            }).then(function(data) {
+                                console.log(data);
+                                println(data.response);
+                                window.scrollTo(0,document.body.scrollHeight);
+                                history.push(string);
+                                historyPointer = history.length;
+                            })
+                        }
+                        break;
+                    case 38:
+                        if (historyPointer > 0) {
+                            historyPointer--;
+                        }
+                        document.getElementById("input").value = history[historyPointer];
+                        console.log(historyPointer);
+                        break;
+                    case 40:
+                        if (historyPointer < history.length - 1) {
+                            historyPointer++;
+                        }
+                        document.getElementById("input").value = history[historyPointer];
+                        console.log(historyPointer);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        )
+    </script>
+</html>
